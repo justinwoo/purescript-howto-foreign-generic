@@ -6,6 +6,7 @@ import Data.Foreign (ForeignError(..), fail, readString, toForeign)
 import Data.Foreign.Class (class AsForeign, class IsForeign)
 import Data.Foreign.Generic (defaultOptions, readGeneric, toForeignGeneric)
 import Data.Foreign.Generic.Types (SumEncoding(..))
+import Data.Foreign.NullOrUndefined (NullOrUndefined)
 import Data.Generic.Rep.Show (genericShow)
 
 newtype SimpleRecord = SimpleRecord
@@ -34,6 +35,19 @@ instance isForeignNestedRecord :: IsForeign NestedRecord where
 instance asForeignNestedRecord :: AsForeign NestedRecord where
   write = toForeignGeneric $ defaultOptions {unwrapSingleConstructors = true}
 
+newtype RecordWithArrayAndNullOrUndefined = RecordWithArrayAndNullOrUndefined
+  { intArray :: Array Int
+  , optionalInt :: NullOrUndefined Int
+  }
+derive instance repGenericRecordWithArrayAndNullOrUndefined :: Rep.Generic RecordWithArrayAndNullOrUndefined _
+derive instance eqRecordWithArrayAndNullOrUndefined :: Eq RecordWithArrayAndNullOrUndefined
+instance showRecordWithArrayAndNullOrUndefined :: Show RecordWithArrayAndNullOrUndefined where
+  show = genericShow
+instance isForeignRecordWithArrayAndNullOrUndefined :: IsForeign RecordWithArrayAndNullOrUndefined where
+  read = readGeneric $ defaultOptions {unwrapSingleConstructors = true}
+instance asForeignRecordWithArrayAndNullOrUndefined :: AsForeign RecordWithArrayAndNullOrUndefined where
+  write = toForeignGeneric $ defaultOptions {unwrapSingleConstructors = true}
+
 data Fruit
   = Apple
   | Banana
@@ -55,7 +69,6 @@ instance asForeignFruit :: AsForeign Fruit where
   -- write Apple = toForeign "Apple"
   -- write Banana = toForeign "Banana"
   -- write Watermelon = toForeign "Watermelon"
-
 
 newtype RecordWithADT = RecordWithADT
   { fruit :: Fruit

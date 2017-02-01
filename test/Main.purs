@@ -5,8 +5,10 @@ import Control.Monad.Aff.Console (log)
 import Control.Monad.Except (runExcept)
 import Data.Either (Either(..))
 import Data.Foreign.Class (class IsForeign, readJSON, write)
+import Data.Maybe (Maybe(..))
+import Data.Newtype (wrap)
 import Global.Unsafe (unsafeStringify)
-import Main (ADTWithArgs(..), Fruit(..), NestedRecord(..), RecordWithADT(..), SimpleRecord(..), TypicalJSTaggedObject(..))
+import Main (ADTWithArgs(..), Fruit(..), NestedRecord(..), RecordWithADT(..), RecordWithArrayAndNullOrUndefined(..), SimpleRecord(..), TypicalJSTaggedObject(..))
 import Test.Spec (describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter (consoleReporter)
@@ -38,6 +40,26 @@ main = do
         let nestedRecordJSON = "{ \"d\": { \"a\": 123, \"b\": \"abc\", \"c\": false } }"
         readJSON' nestedRecordJSON
           `shouldEqual` Right (NestedRecord { d: (SimpleRecord { a: 123, b: "abc", c: false })})
+
+    describe "RecordWithArrayAndNullOrUndefined" do
+      it "can be converted to JSON and converted back" do
+        let recordWithArrayAndNullOrUndefined =
+              RecordWithArrayAndNullOrUndefined
+                { intArray: [1, 2, 3]
+                , optionalInt: wrap $ Just 1
+                }
+        let json = unsafeStringify <<< write $ recordWithArrayAndNullOrUndefined
+        log' json
+        readJSON' json `shouldEqual` Right recordWithArrayAndNullOrUndefined
+      it "can be converted from JSON" do
+        let recordWithArrayAndNullOrUndefinedJSON = "{ \"intArray\": [1, 2, 3] }"
+        readJSON' recordWithArrayAndNullOrUndefinedJSON
+          `shouldEqual` Right
+            (RecordWithArrayAndNullOrUndefined
+              { intArray: [1, 2, 3]
+              , optionalInt: wrap Nothing
+              })
+
 
     describe "RecordWithADT" do
       it "can be converted to JSON and converted back" do
