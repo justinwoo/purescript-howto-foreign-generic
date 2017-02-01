@@ -1,10 +1,9 @@
 module Test.Main where
 
 import Prelude
-import Control.Monad.Aff.Console (log)
 import Control.Monad.Except (runExcept)
 import Data.Either (Either(..))
-import Data.Foreign.Class (class IsForeign, readJSON, write)
+import Data.Foreign.Class (readJSON, write)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
 import Global.Unsafe (unsafeStringify)
@@ -14,86 +13,54 @@ import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner (run)
 
-readJSON' :: forall a. IsForeign a => String -> Either _ a
-readJSON' = runExcept <<< readJSON
+testJSON original input expected = do
+  log' "can be converted to JSON" (show original) json
+  it "can be converted back" $ readJSON' json `shouldEqual` Right original
+  it' "can be converted from JSON" input expected $ readJSON' input `shouldEqual` expected
+  where
+    readJSON' = runExcept <<< readJSON
+    json = unsafeStringify <<< write $ original
+    format a b c = a <> "\n    " <> b <> "\n    -> " <> c
+    log' t a b = it (format t a b) $ pure unit
+    it' a b c t = it (format a b $ show c) t
 
 main = do
   run [consoleReporter] do
     describe "SimpleRecord" do
-      it "can be converted to JSON and converted back" do
-        let simpleRecord = SimpleRecord { a: 1, b: "b", c: true }
-        let json = unsafeStringify <<< write $ simpleRecord
-        log' json
-        readJSON' json `shouldEqual` Right simpleRecord
-      it "can be converted from JSON" do
-        let simpleRecordJSON = "{ \"a\": 123, \"b\": \"abc\", \"c\": false }"
-        readJSON' simpleRecordJSON
-          `shouldEqual` Right (SimpleRecord { a: 123, b: "abc", c: false })
+      testJSON
+        (SimpleRecord { a: 1, b: "b", c: true })
+        "{ \"a\": 123, \"b\": \"abc\", \"c\": false }"
+        (Right (SimpleRecord { a: 123, b: "abc", c: false }))
+      -- log' "can be converted to JSON" (show original) json
+      -- it "can be converted back" $ readJSON' json `shouldEqual` Right original
+      -- it' "can be converted from JSON" input expected $ readJSON' input `shouldEqual` expected
 
     describe "NestedRecord" do
-      it "can be converted to JSON and converted back" do
-        let nestedRecord = NestedRecord { d: SimpleRecord { a: 1, b: "b", c: true }}
-        let json = unsafeStringify <<< write $ nestedRecord
-        log' json
-        readJSON' json `shouldEqual` Right nestedRecord
-      it "can be converted from JSON" do
-        let nestedRecordJSON = "{ \"d\": { \"a\": 123, \"b\": \"abc\", \"c\": false } }"
-        readJSON' nestedRecordJSON
-          `shouldEqual` Right (NestedRecord { d: (SimpleRecord { a: 123, b: "abc", c: false })})
+      testJSON
+        (NestedRecord { d: SimpleRecord { a: 1, b: "b", c: true }})
+        "{ \"d\": { \"a\": 123, \"b\": \"abc\", \"c\": false } }"
+        (Right (NestedRecord { d: (SimpleRecord { a: 123, b: "abc", c: false })}))
 
     describe "RecordWithArrayAndNullOrUndefined" do
-      it "can be converted to JSON and converted back" do
-        let recordWithArrayAndNullOrUndefined =
-              RecordWithArrayAndNullOrUndefined
-                { intArray: [1, 2, 3]
-                , optionalInt: wrap $ Just 1
-                }
-        let json = unsafeStringify <<< write $ recordWithArrayAndNullOrUndefined
-        log' json
-        readJSON' json `shouldEqual` Right recordWithArrayAndNullOrUndefined
-      it "can be converted from JSON" do
-        let recordWithArrayAndNullOrUndefinedJSON = "{ \"intArray\": [1, 2, 3] }"
-        readJSON' recordWithArrayAndNullOrUndefinedJSON
-          `shouldEqual` Right
-            (RecordWithArrayAndNullOrUndefined
-              { intArray: [1, 2, 3]
-              , optionalInt: wrap Nothing
-              })
-
+      testJSON
+        (RecordWithArrayAndNullOrUndefined { intArray: [1, 2, 3] , optionalInt: wrap $ Just 1 })
+        "{ \"intArray\": [1, 2, 3] }"
+        (Right (RecordWithArrayAndNullOrUndefined { intArray: [1, 2, 3] , optionalInt: wrap Nothing }))
 
     describe "RecordWithADT" do
-      it "can be converted to JSON and converted back" do
-        let recordWithADT = RecordWithADT { fruit: Apple }
-        let json = unsafeStringify <<< write $ recordWithADT
-        log' json
-        readJSON' json `shouldEqual` Right recordWithADT
-      it "can be converted from JSON" do
-        let recordWithADTJSON = "{ \"fruit\": \"Watermelon\" }"
-        readJSON' recordWithADTJSON
-          `shouldEqual` Right (RecordWithADT { fruit: Watermelon })
+      testJSON
+        (RecordWithADT { fruit: Apple })
+        "{ \"fruit\": \"Watermelon\" }"
+        (Right (RecordWithADT { fruit: Watermelon }))
 
     describe "ADTWithArgs" do
-      it "can be converted to JSON and converted back" do
-        let adtWithArgs = Set { count: 5 }
-        let json = unsafeStringify <<< write $ adtWithArgs
-        log' json
-        readJSON' json `shouldEqual` Right adtWithArgs
-      it "can be converted from JSON" do
-        let adtWithArgsJSON = "{ \"tag\": \"Add\", \"contents\": 123 }"
-        readJSON' adtWithArgsJSON
-          `shouldEqual` Right (Add 123)
+      testJSON
+        (Set { count: 5 })
+        "{ \"tag\": \"Add\", \"contents\": 123 }"
+        (Right (Add 123))
 
     describe "TypicalJSTaggedObject" do
-      it "can be converted to JSON and converted back" do
-        let typicalJSTaggedObject = Login { username: "agent", password: "hunter2" }
-        let json = unsafeStringify <<< write $ typicalJSTaggedObject
-        log' json
-        readJSON' json `shouldEqual` Right typicalJSTaggedObject
-      it "can be converted from JSON" do
-        let typicalJSTaggedObjectJSON = "{ \"type\": \"Logout\" }"
-        readJSON' typicalJSTaggedObjectJSON
-          `shouldEqual` Right (Logout)
-
-  where
-    log' = log <<< append "\n"
-
+      testJSON
+        (Login { username: "agent", password: "hunter2" })
+        "{ \"type\": \"Logout\" }"
+        (Right (Logout))
