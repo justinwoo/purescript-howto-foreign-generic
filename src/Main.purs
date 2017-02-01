@@ -57,13 +57,13 @@ derive instance eqFruit :: Eq Fruit
 instance showFruit :: Show Fruit where
   show = genericShow
 instance isForeignFruit :: IsForeign Fruit where
-  read x = do
-    string <- readString x
-    case string of
-      "Apple" -> pure Apple
-      "Banana" -> pure Banana
-      "Watermelon" -> pure Watermelon
-      _ -> fail $ ForeignError "We don't know what fruit this is!!!"
+  read x = chooseFruit =<< readString x
+    where
+      chooseFruit s
+        | s == show Apple = pure Apple
+        | s == show Banana = pure Banana
+        | s == show Watermelon = pure Watermelon
+        | otherwise = fail $ ForeignError "We don't know what fruit this is!!!"
 instance asForeignFruit :: AsForeign Fruit where
   write = toForeign <<< show
   -- write Apple = toForeign "Apple"
