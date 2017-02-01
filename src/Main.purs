@@ -5,7 +5,7 @@ import Data.Generic.Rep as Rep
 import Data.Foreign (ForeignError(..), fail, readString, toForeign)
 import Data.Foreign.Class (class AsForeign, class IsForeign)
 import Data.Foreign.Generic (defaultOptions, readGeneric, toForeignGeneric)
-import Data.Foreign.Generic.Types (SumEncoding(..))
+import Data.Foreign.Generic.Types (SumEncoding(..), Options)
 import Data.Foreign.NullOrUndefined (NullOrUndefined)
 import Data.Generic.Rep.Show (genericShow)
 
@@ -106,6 +106,7 @@ derive instance genericRepTypicalReduxAction :: Rep.Generic TypicalJSTaggedObjec
 derive instance eqTypicalReduxAction :: Eq TypicalJSTaggedObject
 instance showTypicalReduxAction :: Show TypicalJSTaggedObject where
   show = genericShow
+typicalReduxActionOptions :: Options
 typicalReduxActionOptions = defaultOptions
   { sumEncoding = TaggedObject
     { tagFieldName: "type"
