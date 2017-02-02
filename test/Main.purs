@@ -31,9 +31,6 @@ main = do
         (SimpleRecord { a: 1, b: "b", c: true })
         "{ \"a\": 123, \"b\": \"abc\", \"c\": false }"
         (Right (SimpleRecord { a: 123, b: "abc", c: false }))
-      -- log' "can be converted to JSON" (show original) json
-      -- it "can be converted back" $ readJSON' json `shouldEqual` Right original
-      -- it' "can be converted from JSON" input expected $ readJSON' input `shouldEqual` expected
 
     describe "NestedRecord" do
       testJSON
