@@ -29,35 +29,35 @@ main = do
     describe "SimpleRecord" do
       testJSON
         (SimpleRecord { a: 1, b: "b", c: true })
-        "{ \"a\": 123, \"b\": \"abc\", \"c\": false }"
+        """{ "a": 123, "b": "abc", "c": false }"""
         (Right (SimpleRecord { a: 123, b: "abc", c: false }))
 
     describe "NestedRecord" do
       testJSON
         (NestedRecord { d: SimpleRecord { a: 1, b: "b", c: true }})
-        "{ \"d\": { \"a\": 123, \"b\": \"abc\", \"c\": false } }"
+        """{ "d": { "a": 123, "b": "abc", "c": false } }"""
         (Right (NestedRecord { d: (SimpleRecord { a: 123, b: "abc", c: false })}))
 
     describe "RecordWithArrayAndNullOrUndefined" do
       testJSON
         (RecordWithArrayAndNullOrUndefined { intArray: [1, 2, 3] , optionalInt: wrap $ Just 1 })
-        "{ \"intArray\": [1, 2, 3] }"
+        """{ "intArray": [1, 2, 3] }"""
         (Right (RecordWithArrayAndNullOrUndefined { intArray: [1, 2, 3] , optionalInt: wrap Nothing }))
 
     describe "RecordWithADT" do
       testJSON
         (RecordWithADT { fruit: Apple })
-        "{ \"fruit\": \"Watermelon\" }"
+        """{ "fruit": "Watermelon" }"""
         (Right (RecordWithADT { fruit: Watermelon }))
 
     describe "ADTWithArgs" do
       testJSON
         (Set { count: 5 })
-        "{ \"tag\": \"Add\", \"contents\": 123 }"
+        """{ "tag": "Add", "contents": 123 }"""
         (Right (Add 123))
 
     describe "TypicalJSTaggedObject" do
       testJSON
         (Login { username: "agent", password: "hunter2" })
-        "{ \"type\": \"Logout\" }"
+        """{ "type": "Logout" }"""
         (Right (Logout))
