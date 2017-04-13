@@ -11,3 +11,18 @@ If you're just getting started, you might be interested in [this repo](https://g
 [See the slides about this repo and purescript-foreign-generics here!
 ![](http://i.imgur.com/LGgtQKb.png)
 ](https://speakerdeck.com/justinwoo/serialization-with-purescript)
+
+## Important: Changes from Video and Slides
+
+The lesson/slides were made with the previous version of foreign-generics. Here's a somewhat quick rundown of what's changed:
+
+| Old name | New name |
+|----------|----------|
+| IsForeign | Decode |
+| AsForeign | Encode |
+| write | encode |
+| read | decode |
+| readJSON | decodeJSON |
+| readGeneric | genericDecode |
+| toForeignGeneric | genericEncode |
+

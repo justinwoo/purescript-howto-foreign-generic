@@ -3,7 +3,8 @@ module Test.Main where
 import Prelude
 import Control.Monad.Except (runExcept)
 import Data.Either (Either(..))
-import Data.Foreign.Class (readJSON, write)
+import Data.Foreign.Class (encode)
+import Data.Foreign.Generic (decodeJSON)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
 import Global.Unsafe (unsafeStringify)
@@ -15,11 +16,11 @@ import Test.Spec.Runner (run)
 
 testJSON original input expected = do
   log' "can be converted to JSON" (show original) json
-  it "can be converted back" $ readJSON' json `shouldEqual` Right original
-  it' "can be converted from JSON" input expected $ readJSON' input `shouldEqual` expected
+  it "can be converted back" $ decodeJSON' json `shouldEqual` Right original
+  it' "can be converted from JSON" input expected $ decodeJSON' input `shouldEqual` expected
   where
-    readJSON' = runExcept <<< readJSON
-    json = unsafeStringify <<< write $ original
+    decodeJSON' = runExcept <<< decodeJSON
+    json = unsafeStringify <<< encode $ original
     format a b c = a <> "\n    " <> b <> "\n    -> " <> c
     log' t a b = it (format t a b) $ pure unit
     it' a b c t = it (format a b $ show c) t
