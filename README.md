@@ -1,5 +1,7 @@
 # purescript-howto-foreign-generic [![Build Status](https://travis-ci.org/justinwoo/purescript-howto-foreign-generic.svg?branch=master)](https://travis-ci.org/justinwoo/purescript-howto-foreign-generic)
 
+## See the blog post about this here: http://qiita.com/kimagure/items/00f97c7fc6cef178fa3c
+
 ## Important: Changes from Video and Slides
 
 The lesson/slides were made with the previous version of foreign-generics. Here's a somewhat quick rundown of what's changed:
