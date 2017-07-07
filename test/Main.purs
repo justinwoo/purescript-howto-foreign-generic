@@ -1,13 +1,12 @@
 module Test.Main where
 
 import Prelude
+
 import Control.Monad.Except (runExcept)
 import Data.Either (Either(..))
-import Data.Foreign.Class (encode)
-import Data.Foreign.Generic (decodeJSON)
+import Data.Foreign.Generic (decodeJSON, encodeJSON)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
-import Global.Unsafe (unsafeStringify)
 import Main (ADTWithArgs(..), Fruit(..), NestedRecord(..), RecordWithADT(..), RecordWithArrayAndNullOrUndefined(..), SimpleRecord(..), TypicalJSTaggedObject(..))
 import Test.Spec (describe, it)
 import Test.Spec.Assertions (shouldEqual)
@@ -15,12 +14,15 @@ import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner (run)
 
 testJSON original input expected = do
-  log' "can be converted to JSON" (show original) json
-  it "can be converted back" $ decodeJSON' json `shouldEqual` Right original
-  it' "can be converted from JSON" input expected $ decodeJSON' input `shouldEqual` expected
+  log' "can be converted to JSON"
+    (show original) json
+  it "can be converted back" $
+    decodeJSON' json `shouldEqual` Right original
+  it' "can be converted from JSON" input expected $
+    decodeJSON' input `shouldEqual` expected
   where
     decodeJSON' = runExcept <<< decodeJSON
-    json = unsafeStringify <<< encode $ original
+    json = encodeJSON $ original
     format a b c = a <> "\n    " <> b <> "\n    -> " <> c
     log' t a b = it (format t a b) $ pure unit
     it' a b c t = it (format a b $ show c) t
@@ -44,6 +46,12 @@ main = do
         (RecordWithArrayAndNullOrUndefined { intArray: [1, 2, 3] , optionalInt: wrap $ Just 1 })
         """{ "intArray": [1, 2, 3] }"""
         (Right (RecordWithArrayAndNullOrUndefined { intArray: [1, 2, 3] , optionalInt: wrap Nothing }))
+
+    describe "Fruit - Enum style ADT" do
+      testJSON
+        (Apple)
+        "\"Watermelon\""
+        (Right Watermelon)
 
     describe "RecordWithADT" do
       testJSON

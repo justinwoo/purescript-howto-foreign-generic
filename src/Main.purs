@@ -1,12 +1,13 @@
 module Main where
 
 import Prelude
-import Data.Generic.Rep as Rep
-import Data.Foreign (ForeignError(..), fail, readString, toForeign)
+
 import Data.Foreign.Class (class Decode, class Encode)
 import Data.Foreign.Generic (defaultOptions, genericDecode, genericEncode)
+import Data.Foreign.Generic.EnumEncoding (genericDecodeEnum, genericEncodeEnum)
 import Data.Foreign.Generic.Types (SumEncoding(..), Options)
 import Data.Foreign.NullOrUndefined (NullOrUndefined)
+import Data.Generic.Rep as Rep
 import Data.Generic.Rep.Show (genericShow)
 
 newtype SimpleRecord = SimpleRecord
@@ -56,19 +57,11 @@ derive instance repGenericFruit :: Rep.Generic Fruit _
 derive instance eqFruit :: Eq Fruit
 instance showFruit :: Show Fruit where
   show = genericShow
+-- since Fruit is an enum-style sum type (i.e. it's a sum type of constructors with no arguments, we can use genericDecodeEnum and genericEncodeEnum!)
 instance decodeFruit :: Decode Fruit where
-  decode x = chooseFruit =<< readString x
-    where
-      chooseFruit s
-        | s == show Apple = pure Apple
-        | s == show Banana = pure Banana
-        | s == show Watermelon = pure Watermelon
-        | otherwise = fail $ ForeignError "We don't know what fruit this is!!!"
+  decode = genericDecodeEnum { constructorTagTransform: id }
 instance encodeFruit :: Encode Fruit where
-  encode = toForeign <<< show
-  -- write Apple = toForeign "Apple"
-  -- write Banana = toForeign "Banana"
-  -- write Watermelon = toForeign "Watermelon"
+  encode = genericEncodeEnum { constructorTagTransform: id }
 
 newtype RecordWithADT = RecordWithADT
   { fruit :: Fruit
@@ -111,6 +104,7 @@ typicalReduxActionOptions = defaultOptions
   { sumEncoding = TaggedObject
     { tagFieldName: "type"
     , contentsFieldName: "payload"
+    , constructorTagTransform: id
     }
   }
 instance decodeTypicalReduxAction :: Decode TypicalJSTaggedObject where
