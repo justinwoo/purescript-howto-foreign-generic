@@ -53,6 +53,12 @@ main = do
         "\"Watermelon\""
         (Right Watermelon)
 
+    describe "Array of Fruits" do
+      testJSON
+        ([Apple, Banana])
+        """["Apple", "Banana"]"""
+        (Right [Apple, Banana])
+
     describe "RecordWithADT" do
       testJSON
         (RecordWithADT { fruit: Apple })
