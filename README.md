@@ -2,6 +2,8 @@
 
 ## See the blog post about this here: http://qiita.com/kimagure/items/00f97c7fc6cef178fa3c
 
+## Note!!! Do you need to just get some simple JSON parsed? Give [Simple-JSON](https://github.com/justinwoo/purescript-simple-json) a try!
+
 ## Important: Changes from Video and Slides
 
 The lesson/slides were made with the previous version of foreign-generics. Here's a somewhat quick rundown of what's changed:
