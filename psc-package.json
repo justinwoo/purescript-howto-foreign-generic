@@ -1,0 +1,13 @@
+{
+  "name": "purescript-howto-foreign-generic",
+  "set": "030818",
+  "source": "https://github.com/justinwoo/spacchetti.git",
+  "depends": [
+    "console",
+    "datetime",
+    "foreign-generic",
+    "generics-rep",
+    "prelude",
+    "spec"
+  ]
+}

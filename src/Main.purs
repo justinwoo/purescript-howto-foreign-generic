@@ -2,13 +2,13 @@ module Main where
 
 import Prelude
 
-import Data.Foreign.Class (class Decode, class Encode)
-import Data.Foreign.Generic (defaultOptions, genericDecode, genericEncode)
-import Data.Foreign.Generic.EnumEncoding (genericDecodeEnum, genericEncodeEnum)
-import Data.Foreign.Generic.Types (SumEncoding(..), Options)
-import Data.Foreign.NullOrUndefined (NullOrUndefined)
 import Data.Generic.Rep as Rep
 import Data.Generic.Rep.Show (genericShow)
+import Data.Maybe (Maybe)
+import Foreign.Class (class Decode, class Encode)
+import Foreign.Generic (defaultOptions, genericDecode, genericEncode)
+import Foreign.Generic.EnumEncoding (genericDecodeEnum, genericEncodeEnum)
+import Foreign.Generic.Types (SumEncoding(..), Options)
 
 newtype SimpleRecord = SimpleRecord
   { a :: Int
@@ -38,7 +38,7 @@ instance encodeNestedRecord :: Encode NestedRecord where
 
 newtype RecordWithArrayAndNullOrUndefined = RecordWithArrayAndNullOrUndefined
   { intArray :: Array Int
-  , optionalInt :: NullOrUndefined Int
+  , optionalInt :: Maybe Int
   }
 derive instance repGenericRecordWithArrayAndNullOrUndefined :: Rep.Generic RecordWithArrayAndNullOrUndefined _
 derive instance eqRecordWithArrayAndNullOrUndefined :: Eq RecordWithArrayAndNullOrUndefined
@@ -59,9 +59,9 @@ instance showFruit :: Show Fruit where
   show = genericShow
 -- since Fruit is an enum-style sum type (i.e. it's a sum type of constructors with no arguments, we can use genericDecodeEnum and genericEncodeEnum!)
 instance decodeFruit :: Decode Fruit where
-  decode = genericDecodeEnum { constructorTagTransform: id }
+  decode = genericDecodeEnum { constructorTagTransform: identity }
 instance encodeFruit :: Encode Fruit where
-  encode = genericEncodeEnum { constructorTagTransform: id }
+  encode = genericEncodeEnum { constructorTagTransform: identity }
 
 newtype RecordWithADT = RecordWithADT
   { fruit :: Fruit
@@ -104,7 +104,7 @@ typicalReduxActionOptions = defaultOptions
   { sumEncoding = TaggedObject
     { tagFieldName: "type"
     , contentsFieldName: "payload"
-    , constructorTagTransform: id
+    , constructorTagTransform: identity
     }
   }
 instance decodeTypicalReduxAction :: Decode TypicalJSTaggedObject where

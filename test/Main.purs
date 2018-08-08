@@ -4,15 +4,27 @@ import Prelude
 
 import Control.Monad.Except (runExcept)
 import Data.Either (Either(..))
-import Data.Foreign.Generic (decodeJSON, encodeJSON)
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
+import Effect (Effect)
+import Foreign (MultipleErrors)
+import Foreign.Class (class Decode, class Encode)
+import Foreign.Generic (decodeJSON, encodeJSON)
 import Main (ADTWithArgs(..), Fruit(..), NestedRecord(..), RecordWithADT(..), RecordWithArrayAndNullOrUndefined(..), SimpleRecord(..), TypicalJSTaggedObject(..))
-import Test.Spec (describe, it)
+import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner (run)
 
+testJSON
+  :: forall a
+   . Encode a
+  => Show a
+  => Decode a
+  => Eq a
+  => a
+  -> String
+  -> Either MultipleErrors a
+  -> Spec Unit
 testJSON original input expected = do
   log' "can be converted to JSON"
     (show original) json
@@ -23,10 +35,11 @@ testJSON original input expected = do
   where
     decodeJSON' = runExcept <<< decodeJSON
     json = encodeJSON $ original
-    format a b c = a <> "\n    " <> b <> "\n    -> " <> c
+    format a b c = a <> "\n    " <> b <> "\n -> " <> c
     log' t a b = it (format t a b) $ pure unit
     it' a b c t = it (format a b $ show c) t
 
+main :: Effect Unit
 main = do
   run [consoleReporter] do
     describe "SimpleRecord" do
@@ -43,9 +56,9 @@ main = do
 
     describe "RecordWithArrayAndNullOrUndefined" do
       testJSON
-        (RecordWithArrayAndNullOrUndefined { intArray: [1, 2, 3] , optionalInt: wrap $ Just 1 })
+        (RecordWithArrayAndNullOrUndefined { intArray: [1, 2, 3] , optionalInt: Just 1 })
         """{ "intArray": [1, 2, 3] }"""
-        (Right (RecordWithArrayAndNullOrUndefined { intArray: [1, 2, 3] , optionalInt: wrap Nothing }))
+        (Right (RecordWithArrayAndNullOrUndefined { intArray: [1, 2, 3] , optionalInt: Nothing }))
 
     describe "Fruit - Enum style ADT" do
       testJSON
